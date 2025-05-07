@@ -1,15 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import datetime
 
 # --- Parameters ---
-rows, cols = 4, 4
+rows, cols = 10, 15
 L0 = 1.0             # Rest length of springs
-k = 100.0            # Spring constant
+k = 200.0            # Spring constant
 mass = 1.0           # Mass of each node
 g = 9.8              # Gravity
-alpha = 0.01         # Relaxation step size
-max_iters = 5000
+alpha = 0.001         # Relaxation step size
+max_iters = 10000
 tolerance = 1e-4
+damping = 10
 
 # --- Initial positions ---
 positions = np.zeros((rows, cols, 2))
@@ -22,11 +24,11 @@ fixed = np.zeros((rows, cols), dtype=bool)
 fixed[0, 0] = True
 fixed[0, -1] = True
 
-# --- Spring connections (horizontal and vertical only for simplicity) ---
+# --- Spring connections ---
 spring_pairs = []
 for i in range(rows):
     for j in range(cols):
-        for di, dj in [(1, 0), (0, 1)]:  # vertical and horizontal neighbors
+        for di, dj in [(1, 0), (0, 1), (1,1), (-1,1)]:  # vertical and horizontal neighbors
             ni, nj = i + di, j + dj
             if 0 <= ni < rows and 0 <= nj < cols:
                 spring_pairs.append(((i, j), (ni, nj)))
@@ -57,7 +59,12 @@ for step in range(max_iters):
 
     # Update positions only for non-fixed nodes
     for i, j in zip(*np.where(~fixed)):
+        oldPosition = np.array([positions[i,j][0], positions[i,j][1]])
         positions[i, j] += alpha * forces[i, j]
+        # Implement damping
+        velocity = (positions[i, j] - oldPosition) * alpha
+        # print(f"Velocity is {velocity}")
+        positions[i, j] -= velocity * damping
 
     # Check convergence
     max_force = np.max(np.linalg.norm(forces[~fixed], axis=-1))
@@ -79,9 +86,11 @@ for i in range(rows):
     for j in range(cols):
         plt.plot(positions[i, j][0], positions[i, j][1], 'bo')
 
-plt.title("4×4 Spring-Mass Grid (Static Equilibrium)")
+plt.title(f"{rows}×{cols} Spring-Mass Grid (Static Equilibrium)")
 plt.axis('equal')
 plt.grid(True)
 plt.xlabel("X Position")
 plt.ylabel("Y Position")
-plt.show()
+# datetime.datetime.now()
+plt.savefig(f"{rows}x{cols} {str(datetime.datetime.now())}.png")
+# plt.show()
