@@ -6,7 +6,7 @@ import matplotlib.animation as animation
 # --- Parameters ---
 rows, cols = 10,15
 L0 = 1.0             # Rest length of springs
-k = 200.0            # Spring constant
+k = 100.0            # Spring constant
 mass = 1.0           # Mass of each node
 g = 9.8              # Gravity
 dt = 0.01         # Relaxation step size
@@ -35,10 +35,13 @@ ax.set(xlim=[0, rows], ylim=[cols * -1, 0])
 
 # --- Fixed nodes (top-left and top-right) ---
 fixed = np.zeros((rows, cols), dtype=bool)
-fixed[0, 0] = True
-fixed[0, -1] = True
+# fixed[0, 0] = True
+# fixed[0, -1] = True
 # fixed[-1, -1] = True
 # fixed[-1, 0] = True
+
+for i in range(cols):
+    fixed[0, i] = True
 
 
 # --- Spring connections ---
@@ -64,6 +67,10 @@ def update(step):
     for i in range(rows):
         for j in range(cols):
             if not fixed[i, j]:
+                # Add a heavier center mass
+                # if j == 14:
+                #     forces[i, j][1] -= mass * 10 * g
+                # else:
                 forces[i, j][1] -= mass * g
                 forces[i, j] -= (velocities[i, j]) * damping
 
@@ -111,7 +118,7 @@ def update(step):
     pts.set_offsets(linPositions)
     return pts, 
 
-plt.title(f"{rows}×{cols} Spring-Mass Grid (Static Equilibrium)")
+plt.title(f"{rows}×{cols} Spring-Mass Grid")
 plt.axis('equal')
 plt.grid(True)
 plt.xlabel("X Position")
