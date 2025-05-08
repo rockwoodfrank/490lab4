@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import datetime
 
 # --- Parameters ---
-rows, cols = 4, 4
+rows, cols = 10, 15
 L0 = 1.0             # Rest length of springs
 k = 200.0            # Spring constant
 mass = 1.0           # Mass of each node
@@ -75,16 +75,29 @@ else:
     print("Did not converge.")
 
 # --- Plot the final structure ---
-plt.figure(figsize=(6, 6))
+# Run through the first time to get min and max
+dists = []
 for (i1, j1), (i2, j2) in spring_pairs:
+    # print(forces[i1][j1])
     p1 = positions[i1, j1]
     p2 = positions[i2, j2]
-    plt.plot([p1[0], p2[0]], [p1[1], p2[1]], 'k-', lw=1)
+    dist = np.linalg.norm(p1 - p2)
+    dists.append(dist)
+
+cmap = plt.get_cmap('magma')
+norm = plt.Normalize(min(dists), 1.1 * max(dists))
+for (i1, j1), (i2, j2) in spring_pairs:
+    # print(forces[i1][j1])
+    p1 = positions[i1, j1]
+    p2 = positions[i2, j2]
+    dist = np.linalg.norm(p1 - p2)
+    color = cmap(norm(dist))
+    plt.plot([p1[0], p2[0]], [p1[1], p2[1]], color=color, lw=1.5)
 
 # Plot the masses
 for i in range(rows):
     for j in range(cols):
-        plt.plot(positions[i, j][0], positions[i, j][1], 'bo')
+        plt.plot(positions[i, j][0], positions[i, j][1], 'ko')
 
 plt.title(f"{rows}×{cols} Spring-Mass Grid (Static Equilibrium)")
 plt.axis('equal')
@@ -92,5 +105,5 @@ plt.grid(True)
 plt.xlabel("X Position")
 plt.ylabel("Y Position")
 # datetime.datetime.now()
-# plt.savefig(f"{rows}x{cols} {str(datetime.datetime.now())}.png")
-plt.show()
+plt.savefig(f"{rows}x{cols} {str(datetime.datetime.now())} stretchvis.png")
+# plt.show()
